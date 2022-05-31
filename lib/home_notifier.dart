@@ -19,6 +19,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
   String? broker;
   final Map<String, List<MessageModel>?> _messages = {};
   String? _username;
+  bool showUserConfirmed = false;
 
   TextEditingController addTopicController = TextEditingController();
   TextEditingController messageController = TextEditingController();
@@ -59,6 +60,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
 
   void onChangeUsername(String value){
     _username = value;
+    showUserConfirmed = false;
     notifyListeners();
   }
 
@@ -167,12 +169,13 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
           addToMessagesSafely(messageFromSocket.topic ?? '', messageFromSocket);
           break;
         case MessageFromSocketType.okUser:
-          // do nothing
+          showUserConfirmed = true;
           break;
         case MessageFromSocketType.errorUser:
           showMessage(messageFromSocket.message ?? '', messageType: MessageTypeEnum.error);
           usernameController.clear();
           _username = null;
+          showUserConfirmed = false;
           break;
         default:
           showMessage(messageFromSocket.message ?? '');
@@ -198,6 +201,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
     _username = null;
     _selectedTopic = null;
     if(clearBroker) broker = null;
+    showUserConfirmed = false;
     socket?.destroy();
     notifyListeners();
   }

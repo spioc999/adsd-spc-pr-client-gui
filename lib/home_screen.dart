@@ -141,7 +141,7 @@ class _MainWidget extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 color: notifier.sendUsernameEnabled ? Colors.blue : Colors.grey,
                               ),
-                              child: const Icon(Icons.person_add_alt, color: Colors.white, size: 14,),
+                              child: Icon(notifier.showUserConfirmed ? Icons.check : Icons.person_add_alt, color: Colors.white, size: 14,),
                             ),
                           ),
                         ),
