@@ -194,6 +194,8 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
     _messages.clear();
     addTopicController.clear();
     messageController.clear();
+    usernameController.clear();
+    _username = null;
     _selectedTopic = null;
     socket?.destroy();
     notifyListeners();
