@@ -117,38 +117,66 @@ class _MainWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.max,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 15.0),
-          child: Align(
-            alignment: Alignment.topRight,
-            child: InkWell(
-              onTap: () => notifier.connect(),
-              child: Tooltip(
-                message: notifier.broker != null && notifier.isConnected ? 'Broker: ${notifier.broker}' : 'Tap on me to connect!',
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 0.15),
-                    borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                  ),
-                  padding: const EdgeInsets.all(4.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: notifier.isConnected ? Colors.green : Colors.red,
-                          border: Border.all(color: Colors.grey, width: 0.35),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          padding: const EdgeInsets.only(bottom: 15),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              if(notifier.isConnected)
+                Flexible(
+                      flex: 1,
+                      child: AppTextFormField(
+                        controller: notifier.usernameController,
+                        onChanged: (value) => notifier.onChangeUsername(value),
+                        onFieldSubmitted: notifier.sendUsernameEnabled ? () => notifier.sendUsername() : null,
+                        labelText: 'Username',
+                        suffix: InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(16)),
+                          onTap: notifier.sendUsernameEnabled ? () => notifier.sendUsername() : null,
+                          child: Container(
+                            width: 22, height: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: notifier.sendUsernameEnabled ? Colors.blue : Colors.grey,
+                            ),
+                            child: const Icon(Icons.person_add_alt, color: Colors.white, size: 14,),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 4,),
-                      Text('${notifier.isConnected ? '' : 'NOT ' }CONNECTED')
-                    ]
+                    ),
+              const Spacer(),
+              Align(
+                alignment: Alignment.topRight,
+                child: InkWell(
+                  onTap: () => notifier.connect(),
+                  child: Tooltip(
+                    message: notifier.broker != null && notifier.isConnected ? 'Broker: ${notifier.broker}' : 'Tap on me to connect!',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 0.15),
+                        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      padding: const EdgeInsets.all(4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: notifier.isConnected ? Colors.green : Colors.red,
+                              border: Border.all(color: Colors.grey, width: 0.35),
+                              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                            ),
+                          ),
+                          const SizedBox(width: 4,),
+                          Text('${notifier.isConnected ? '' : 'NOT ' }CONNECTED')
+                        ]
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
         if(!notifier.isConnected && notifier.broker != null) Expanded(child: Center(child: Text('Connection with ${notifier.broker} lost,\n please reconnect and add again topics!', textAlign: TextAlign.center,)))
@@ -158,7 +186,7 @@ class _MainWidget extends StatelessWidget {
           Expanded(
             child: notifier.messagesOfSelectedTopic.isEmpty ? 
               const Center(child: Text('No message yet for this topic!')) : ListView.builder(
-                controller: ScrollController(),
+                controller: notifier.messagesScrollController,
                 itemCount: notifier.messagesOfSelectedTopic.length,
                 itemBuilder: (_, index) => MessageItem(message: notifier.messagesOfSelectedTopic[index]),
               )           

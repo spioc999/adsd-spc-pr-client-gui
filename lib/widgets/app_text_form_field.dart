@@ -8,6 +8,7 @@ class AppTextFormField extends StatelessWidget {
   final bool enabled;
   final TextEditingController? controller;
   final Widget? suffix;
+  final String? labelText;
 
   const AppTextFormField({
     Key? key,
@@ -17,7 +18,8 @@ class AppTextFormField extends StatelessWidget {
     this.textCapitalization,
     this.enabled = true,
     this.controller,
-    this.suffix
+    this.suffix,
+    this.labelText
   }) : super(key: key);
 
   @override
@@ -33,6 +35,7 @@ class AppTextFormField extends StatelessWidget {
       onChanged: (value) => onChanged?.call(value),
       onFieldSubmitted: (value) => onFieldSubmitted?.call(),
       decoration: InputDecoration(
+        labelText: labelText,
         contentPadding: const EdgeInsets.all(8),
         hintText: hintText,
         border: OutlineInputBorder(

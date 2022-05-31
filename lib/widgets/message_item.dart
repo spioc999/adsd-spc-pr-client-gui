@@ -1,6 +1,5 @@
 import 'package:client_tcp/model/message_model.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class MessageItem extends StatelessWidget {
   final MessageModel message;
@@ -8,7 +7,7 @@ class MessageItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itsMine = message.itsMine == true;
+    final itsMine = message.isMine == true;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Column(
@@ -22,7 +21,7 @@ class MessageItem extends StatelessWidget {
               if(!itsMine) 
                 ...[CircleAvatar(
                         radius: 15,
-                        backgroundColor: Color(Random().nextInt(0xffffffff)),
+                        backgroundColor: message.colorUser,
                         child: message.username?.isNotEmpty == true ? Text(message.username?[0].toUpperCase() ?? '') : const Icon(Icons.person),
                       ), 
                       const SizedBox(width: 10,)
@@ -50,7 +49,7 @@ class MessageItem extends StatelessWidget {
                 child: Text(message.timestamp?.toIso8601String() ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12),),
               ),
               Visibility(
-                visible: message.itsMine == true,
+                visible: message.isMine == true,
                 child: Padding(padding: const EdgeInsets.only(left: 10), child: Icon(_iconStatus, size: 14, color: Colors.grey,),)
               )
             ],

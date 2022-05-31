@@ -1,13 +1,16 @@
+import 'package:flutter/material.dart';
+
 class MessageModel{
   String? topic;
   String? message;
   String? uuid;
   DateTime? timestamp;
-  bool? itsMine;
+  bool? isMine;
   StatusMessage? statusMessage;
   String? username;
+  Color? colorUser;
 
-  MessageModel({this.topic, this.message, this.uuid, this.timestamp, this.itsMine = false, this.statusMessage, this.username});
+  MessageModel({this.topic, this.message, this.uuid, this.timestamp, this.isMine = false, this.statusMessage, this.username, this.colorUser});
 
   MessageModel.fromJson(Map<String, dynamic> json)
       : topic = json['topic'],

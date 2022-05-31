@@ -3,12 +3,12 @@ import 'package:client_tcp/base/base_notifier.dart';
 import 'package:client_tcp/model/message_from_socket.dart';
 import 'package:client_tcp/model/message_model.dart';
 import 'package:client_tcp/model/topic_model.dart';
+import 'package:client_tcp/model/username_model.dart';
 import 'package:client_tcp/services/rest_service.dart';
 import 'package:client_tcp/services/tcp_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:collection/collection.dart';
-
-//TODO user and not read flag and pallino che cambia sempre colore
 
 class HomeNotifier extends BaseNotifier with RestService, TcpService{
   final List<TopicModel> _topics = [];
@@ -18,12 +18,16 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
   String? _messageToSend;
   String? broker;
   final Map<String, List<MessageModel>?> _messages = {};
+  String? _username;
 
   TextEditingController addTopicController = TextEditingController();
   TextEditingController messageController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  ScrollController messagesScrollController = ScrollController();
 
   void onTapTopic(int index) {
     _selectedTopic = _topics[index].topic;
+    _topics[index].newMessages = false;
     notifyListeners();
   }
 
@@ -37,6 +41,24 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
 
   void onChangeTopicToAdd(String value){
     _topicToAdd = value;
+    notifyListeners();
+  }
+
+
+  void sendUsername() async{
+    if(_username != null) {
+      if(!(await sendOnSocket(TcpCommand.user, jsonEncode(UsernameModel(username: _username, uuid: getUniqueId()).toJson())))){
+        showMessage('Error during setting username!', messageType: MessageTypeEnum.error);
+        _username = null;
+        usernameController.clear();
+        notifyListeners();
+      }
+    }
+  }
+
+
+  void onChangeUsername(String value){
+    _username = value;
     notifyListeners();
   }
 
@@ -85,7 +107,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
         uuid: getUniqueId(),
         timestamp: DateTime.now(),
         statusMessage: StatusMessage.pending,
-        itsMine: true
+        isMine: true
       );
       if(await sendOnSocket(TcpCommand.send, jsonEncode(messageModel.toJson()))){
         addToMessagesSafely(selectedTopic ?? '', messageModel);
@@ -103,13 +125,13 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
       switch(messageFromSocket.messageFromSocketType ?? MessageFromSocketType.none){
         case MessageFromSocketType.okSend:
           if(messageFromSocket.uuid != null){
-            final messageSameUuid = _allMessages.firstWhereOrNull((m) => m.uuid == messageFromSocket.uuid && m.itsMine == true);
+            final messageSameUuid = _allMessages.firstWhereOrNull((m) => m.uuid == messageFromSocket.uuid && m.isMine == true);
             messageSameUuid?.statusMessage = StatusMessage.confirmed;
           }
           break;
         case MessageFromSocketType.errorSend:
           if(messageFromSocket.uuid != null){
-            final messageSameUuid = _allMessages.firstWhereOrNull((m) => m.uuid == messageFromSocket.uuid && m.itsMine == true);
+            final messageSameUuid = _allMessages.firstWhereOrNull((m) => m.uuid == messageFromSocket.uuid && m.isMine == true);
             messageSameUuid?.statusMessage = StatusMessage.canceled;
             showMessage(messageFromSocket.message ?? '', messageType: MessageTypeEnum.error);
           }
@@ -128,7 +150,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
             final topicToRemove = _topics.firstWhereOrNull((t) => t.uuid == messageFromSocket.uuid);
             if(topicToRemove != null){
               _topics.remove(topicToRemove);
-              _messages[topicToRemove.topic ?? ''] = null; //TODO lock
+              _messages[topicToRemove.topic ?? ''] = null;
             }
           }
           break;
@@ -136,13 +158,21 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
           showMessage(messageFromSocket.message ?? '', messageType: MessageTypeEnum.error);
           break;
         case MessageFromSocketType.newMessage:
+          messageFromSocket.colorUser = Color(Random().nextInt(0xffffffff));
+          messageFromSocket.timestamp ??= DateTime.now();
+          final topicModel = topics.firstWhereOrNull((t) => t.topic == messageFromSocket.topic);
+          if(selectedTopic == null || topicModel?.topic != selectedTopic){
+            topicModel?.newMessages = true;
+          }
           addToMessagesSafely(messageFromSocket.topic ?? '', messageFromSocket);
           break;
         case MessageFromSocketType.okUser:
-          // TODO: Handle this case.
+          // do nothing
           break;
         case MessageFromSocketType.errorUser:
-          // TODO: Handle this case.
+          showMessage(messageFromSocket.message ?? '', messageType: MessageTypeEnum.error);
+          usernameController.clear();
+          _username = null;
           break;
         default:
           showMessage(messageFromSocket.message ?? '');
@@ -183,6 +213,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
   String? get selectedTopic => _selectedTopic;
   bool get addTopicEnabled => isConnected && _topicToAdd?.isNotEmpty == true;
   bool get sendMessageEnabled => isConnected && _selectedTopic!= null && _messageToSend?.isNotEmpty == true;
+  bool get sendUsernameEnabled => isConnected && _username?.isNotEmpty == true;
   List<MessageModel> get messagesOfSelectedTopic {
     final filteredMessages = _messages[selectedTopic] ?? [];
     filteredMessages.sort((a,b) => a.timestamp?.compareTo(b.timestamp ?? DateTime.now()) ?? 0);
