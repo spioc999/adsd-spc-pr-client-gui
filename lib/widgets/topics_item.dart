@@ -38,7 +38,7 @@ class TopicsItem extends StatelessWidget {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: Colors.red,
+                          color: Colors.blue,
                           border: Border.all(color: Colors.grey, width: 0.35),
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
                         ),

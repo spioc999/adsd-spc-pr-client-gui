@@ -11,7 +11,7 @@ mixin RestService on BaseNotifier{
       if(response.statusCode == 200) return response.data;
       showMessage(response.data, messageType: MessageTypeEnum.error);
     }on DioError catch (e){
-      showMessage(e.response?.data, messageType: MessageTypeEnum.error);
+      showMessage(e.response?.data?.toString() ?? e.message, messageType: MessageTypeEnum.error);
     }catch(e){
       showMessage(e.toString(), messageType: MessageTypeEnum.error);
     }

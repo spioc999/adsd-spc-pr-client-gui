@@ -188,7 +188,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
     showMessage(error, messageType: MessageTypeEnum.error);
   }
 
-  void onDone(){
+  void onDone({bool clearBroker = false}){
     isConnected = false;
     _topics.clear();
     _messages.clear();
@@ -197,6 +197,7 @@ class HomeNotifier extends BaseNotifier with RestService, TcpService{
     usernameController.clear();
     _username = null;
     _selectedTopic = null;
+    if(clearBroker) broker = null;
     socket?.destroy();
     notifyListeners();
   }
